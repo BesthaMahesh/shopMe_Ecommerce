@@ -2,22 +2,29 @@ const express = require('express');
 const cors = require('cors');
 const admin = require('firebase-admin');
 
-// Initialize Firebase Admin (Make sure to download your serviceAccountKey.json from Firebase Console)
-// and place it in the \`backend\` folder.
+// Initialize Firebase Admin
 try {
-    const serviceAccount = require('./serviceAccountKey.json');
+    let serviceAccount;
+    // Check if the service account is provided via an environment variable (for production like Render)
+    if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+        serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+    } else {
+        // Fallback to local file for development
+        serviceAccount = require('./serviceAccountKey.json.json');
+    }
+
     admin.initializeApp({
         credential: admin.credential.cert(serviceAccount)
     });
     console.log('Firebase initialized successfully!');
 } catch (error) {
-    console.warn('Firebase initialization failed. Make sure you added serviceAccountKey.json.', error.message);
+    console.warn('Firebase initialization failed. Make sure you added the service account key.', error.message);
 }
 
 const db = admin.firestore();
 
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors());
